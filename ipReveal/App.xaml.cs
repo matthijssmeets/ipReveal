@@ -1,0 +1,38 @@
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using ip_a.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using System;
+
+namespace ip_a;
+
+public partial class App : Application
+{
+    private Window window;
+
+    public App()
+    {
+        InitializeComponent();
+    }
+
+    public static FrameworkElement MainRoot
+    {
+        get; private set;
+    }
+
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    {
+        var services = new ServiceCollection();
+
+        services.AddHttpClient<RevealServiceClient>(client =>
+        {
+            client.BaseAddress = new Uri("https://ipreveal.cc/");
+        });
+
+        Ioc.Default.ConfigureServices(services.BuildServiceProvider());
+
+        window = new AppWindow();
+        window.Activate();
+        MainRoot = window.Content as FrameworkElement;
+    }
+}

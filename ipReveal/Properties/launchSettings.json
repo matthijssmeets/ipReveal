@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "ipReveal (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ipReveal (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
