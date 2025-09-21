@@ -16,7 +16,8 @@
             <RowDefinition Height="4" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Spacing="10">
+        <StackPanel Grid.Row="0"
+            Spacing="10">
 
             <Grid>
                 <Grid.RowDefinitions>
@@ -43,6 +44,7 @@
             </Grid>
         </StackPanel>
 
-        <ProgressBar Grid.Row="1" IsIndeterminate="{x:Bind ViewModel.ProgressBarEnabled,Mode=TwoWay}" />
+        <ProgressBar Grid.Row="1"
+            IsIndeterminate="{x:Bind ViewModel.ProgressBarEnabled,Mode=TwoWay}" />
     </Grid>
 </Page>
