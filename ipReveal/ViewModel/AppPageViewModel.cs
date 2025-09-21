@@ -13,11 +13,11 @@ namespace ip_a.ViewModel;
 public partial class AppPageViewModel : ObservableObject
 {
     private const string IsResolvingText = "Resolving public IPv4";
-    private readonly RevealServiceClient revealCLient;
+    private readonly RevealServiceClient revealClient;
 
     public AppPageViewModel()
     {
-        revealCLient = Ioc.Default.GetRequiredService<RevealServiceClient>();
+        revealClient = Ioc.Default.GetRequiredService<RevealServiceClient>();
     }
 
     [ObservableProperty]
@@ -63,7 +63,7 @@ public partial class AppPageViewModel : ObservableObject
 
             // Reveal
 
-            var response = await revealCLient.GetAsync();
+            var response = await revealClient.GetAsync();
             Ipv4 = response?.Ip ?? "Error";
 
             // Update UI
