@@ -9,6 +9,6 @@ public class RevealServiceClient(HttpClient httpClient)
 {
     public async Task<IpModel?> GetAsync()
     {
-        return await httpClient.GetFromJsonAsync<IpModel>("all.json");
+        return await httpClient.GetFromJsonAsync("all.json", IpModelContext.Default.IpModel);
     }
 }
