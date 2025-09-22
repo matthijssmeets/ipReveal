@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using ip_a.Services;
+using ip_a.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
@@ -8,14 +9,14 @@ namespace ip_a;
 
 public partial class App : Application
 {
-    private Window window;
+    private Window? window;
 
     public App()
     {
         InitializeComponent();
     }
 
-    public static FrameworkElement MainRoot
+    public static FrameworkElement? MainRoot
     {
         get; private set;
     }
@@ -24,6 +25,7 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
+        services.AddTransient<AppPageViewModel>();
         services.AddHttpClient<RevealServiceClient>(client =>
         {
             client.BaseAddress = new Uri("https://ipreveal.cc/");
@@ -33,6 +35,7 @@ public partial class App : Application
 
         window = new AppWindow();
         window.Activate();
-        MainRoot = window.Content as FrameworkElement;
+        MainRoot = window.Content as FrameworkElement
+            ?? throw new InvalidOperationException("Window.Content is not a FrameworkElement.");
     }
 }
