@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.DependencyInjection;
 using ip_a.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,7 +10,7 @@ public sealed partial class AppPage : Page
     public AppPageViewModel ViewModel
     {
         get;
-    } = new();
+    } = Ioc.Default.GetRequiredService<AppPageViewModel>();
 
     public AppPage()
     {

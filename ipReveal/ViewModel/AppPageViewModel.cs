@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using ip_a.Services;
+using Microsoft.UI.Xaml;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -15,9 +15,9 @@ public partial class AppPageViewModel : ObservableObject
     private const string IsResolvingText = "Resolving public IPv4";
     private readonly RevealServiceClient revealClient;
 
-    public AppPageViewModel()
+    public AppPageViewModel(RevealServiceClient revealServiceClient)
     {
-        revealClient = Ioc.Default.GetRequiredService<RevealServiceClient>();
+        revealClient = revealServiceClient;
     }
 
     [ObservableProperty]
@@ -25,6 +25,18 @@ public partial class AppPageViewModel : ObservableObject
     {
         get; set;
     } = IsResolvingText;
+
+    [ObservableProperty]
+    public partial bool ErrorEnabled
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial string ErrorMessage
+    {
+        get; set;
+    } = string.Empty;
 
     [ObservableProperty]
     public partial bool ProgressBarEnabled
@@ -44,7 +56,7 @@ public partial class AppPageViewModel : ObservableObject
         get; set;
     }
 
-    private string Ipv4
+    private string IpAddress
     {
         get; set;
     } = string.Empty;
@@ -54,36 +66,39 @@ public partial class AppPageViewModel : ObservableObject
     {
         try
         {
-            // Update UI
             TextValue = IsResolvingText;
-            ControlsEnabled(false);
+            ErrorEnabled = false;
+            ProgressBarEnabled = true;
+            CopyBtnEnabled = false;
+            RefreshBtnEnabled = false;
 
             // Add some delay to see the progress bar
             await Task.Delay(1000);
 
-            // Reveal
-
+            // Resolve Public IpAddress
             var response = await revealClient.GetAsync();
-            Ipv4 = response?.Ip ?? "Error";
+            IpAddress = response?.Ip ?? "Error";
 
-            // Update UI
             var builder = new StringBuilder();
-            builder.AppendLine($"Your IP is {Ipv4} [{response?.City} @ {response?.Country}]");
+            builder.AppendLine($"Your IP is {IpAddress} [{response?.City} @ {response?.Country}]");
             builder.AppendLine($"Internet service provider: {response?.Isp_organization}");
 
             TextValue = builder.ToString();
+            CopyBtnEnabled = true;
         }
         catch (HttpRequestException)
         {
-            TextValue = $"⁉️ - Please check your connection...";
+            ErrorMessage = "Please check your connection...";
+            ErrorEnabled = true;
         }
         catch (Exception ex)
         {
-            TextValue = $"⁉️ - {ex.Message}";
+            ErrorMessage = $"{ex.Message}";
+            ErrorEnabled = true;
         }
 
-        // Update UI
-        ControlsEnabled(true);
+        ProgressBarEnabled = false;
+        RefreshBtnEnabled = true;
     }
 
     [RelayCommand]
@@ -91,8 +106,9 @@ public partial class AppPageViewModel : ObservableObject
     {
         try
         {
-            // Update UI
-            ControlsEnabled(false);
+            ProgressBarEnabled = true;
+            CopyBtnEnabled = false;
+            RefreshBtnEnabled = false;
 
             // Add some delay to see the progress bar
             await Task.Delay(500);
@@ -102,22 +118,26 @@ public partial class AppPageViewModel : ObservableObject
             {
                 RequestedOperation = DataPackageOperation.Copy
             };
-            dataPackage.SetText(Ipv4);
+            dataPackage.SetText(IpAddress);
             Clipboard.SetContent(dataPackage);
         }
         catch (Exception ex)
         {
-            TextValue = $"⁉️ - {ex.Message}";
+            ErrorMessage = $"{ex.Message}";
+            ErrorEnabled = true;
+            ProgressBarEnabled = false;
+            CopyBtnEnabled = true;
+            RefreshBtnEnabled = true;
         }
 
-        // Update UI
-        ControlsEnabled(true);
+        ProgressBarEnabled = false;
+        CopyBtnEnabled = true;
+        RefreshBtnEnabled = true;
     }
 
-    private void ControlsEnabled(bool enabled)
+    [RelayCommand]
+    public static void AppExit()
     {
-        ProgressBarEnabled = !enabled;
-        CopyBtnEnabled = enabled;
-        RefreshBtnEnabled = enabled;
+        Application.Current.Exit();
     }
 }
