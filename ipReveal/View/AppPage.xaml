@@ -10,7 +10,7 @@
     <Grid>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="80" />
+            <RowDefinition Height="60" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -38,17 +38,21 @@
             Spacing="10">
 
             <TextBlock
-                FontSize="17"
-                VerticalAlignment="Center"
-                TextWrapping="Wrap"
-                Text="{x:Bind ViewModel.TextValue, Mode=TwoWay}" />
+                FontSize="30"
+                HorizontalAlignment="Center"
+                Text="{x:Bind ViewModel.Headline, Mode=TwoWay}" />
+
+            <TextBlock
+                FontSize="15"
+                HorizontalAlignment="Center"
+                Text="{x:Bind ViewModel.Subheadline, Mode=TwoWay}" />
 
             <InfoBar
-              IsOpen="{x:Bind ViewModel.ErrorEnabled, Mode=TwoWay}"
-              Severity="Error"
-              Title="Error"
-              IsClosable="False"
-              Message="{x:Bind ViewModel.ErrorMessage, Mode=TwoWay}" />
+                IsOpen="{x:Bind ViewModel.ErrorEnabled, Mode=TwoWay}"
+                Severity="Error"
+                Title="Error"
+                IsClosable="False"
+                Message="{x:Bind ViewModel.ErrorMessage, Mode=TwoWay}" />
 
             <ProgressBar
                 IsIndeterminate="{x:Bind ViewModel.ProgressBarEnabled,Mode=TwoWay}" />

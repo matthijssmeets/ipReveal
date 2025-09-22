@@ -4,7 +4,6 @@ using ip_a.Services;
 using Microsoft.UI.Xaml;
 using System;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -12,7 +11,7 @@ namespace ip_a.ViewModel;
 
 public partial class AppPageViewModel : ObservableObject
 {
-    private const string IsResolvingText = "Resolving public IPv4";
+    private const string IsResolvingText = "Resolving Public IP";
     private readonly RevealServiceClient revealClient;
 
     public AppPageViewModel(RevealServiceClient revealServiceClient)
@@ -21,10 +20,16 @@ public partial class AppPageViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial string TextValue
+    public partial string Headline
     {
         get; set;
     } = IsResolvingText;
+
+    [ObservableProperty]
+    public partial string Subheadline
+    {
+        get; set;
+    } = string.Empty;
 
     [ObservableProperty]
     public partial bool ErrorEnabled
@@ -66,7 +71,8 @@ public partial class AppPageViewModel : ObservableObject
     {
         try
         {
-            TextValue = IsResolvingText;
+            Headline = IsResolvingText;
+            Subheadline = string.Empty;
             ErrorEnabled = false;
             ProgressBarEnabled = true;
             CopyBtnEnabled = false;
@@ -79,11 +85,8 @@ public partial class AppPageViewModel : ObservableObject
             var response = await revealClient.GetAsync();
             IpAddress = response?.Ip ?? "Error";
 
-            var builder = new StringBuilder();
-            builder.AppendLine($"Your IP is {IpAddress} [{response?.City} @ {response?.Country}]");
-            builder.AppendLine($"Internet service provider: {response?.Isp_organization}");
-
-            TextValue = builder.ToString();
+            Headline = IpAddress;
+            Subheadline = $"{response?.Isp_organization} | {response?.City} @ {response?.Country}";
             CopyBtnEnabled = true;
         }
         catch (HttpRequestException)
