@@ -20,6 +20,7 @@ public sealed partial class AppPage : Page
 
     private async void AppPage_Loaded(object sender, RoutedEventArgs e)
     {
+        await ViewModel.GetCollection();
         await ViewModel.ResolvePublicIpAsync();
     }
 }
