@@ -33,7 +33,10 @@ public partial class App : Application
 
         Ioc.Default.ConfigureServices(services.BuildServiceProvider());
 
-        window = new AppWindow();
+        window = new AppWindow
+        {
+            ExtendsContentIntoTitleBar = true
+        };
         window.Activate();
         MainRoot = window.Content as FrameworkElement
             ?? throw new InvalidOperationException("Window.Content is not a FrameworkElement.");
