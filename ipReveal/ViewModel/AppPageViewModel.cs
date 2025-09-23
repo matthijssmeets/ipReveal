@@ -1,8 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ip_a.Models;
 using ip_a.Services;
-using Microsoft.UI.Xaml;
 using System;
+using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -11,7 +12,9 @@ namespace ip_a.ViewModel;
 
 public partial class AppPageViewModel : ObservableObject
 {
-    private const string IsResolvingText = "Resolving Public IP";
+    private const string IsResolvingHeadlineText = "Resolving Public IP";
+    private const string IsResolvingSubheadlineText = "• • • • •";
+
     private readonly RevealServiceClient revealClient;
 
     public AppPageViewModel(RevealServiceClient revealServiceClient)
@@ -23,7 +26,7 @@ public partial class AppPageViewModel : ObservableObject
     public partial string Headline
     {
         get; set;
-    } = IsResolvingText;
+    } = IsResolvingHeadlineText;
 
     [ObservableProperty]
     public partial string Subheadline
@@ -50,44 +53,62 @@ public partial class AppPageViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial bool CopyBtnEnabled
+    public partial bool SecondaryBtnEnabled
     {
         get; set;
     }
 
     [ObservableProperty]
-    public partial bool RefreshBtnEnabled
+    public partial bool PrimaryBtnEnabled
     {
         get; set;
     }
+
+    [ObservableProperty]
+    public partial ObservableCollection<IpModel> IpCollection
+    {
+        get; set;
+    } = [];
 
     private string IpAddress
     {
         get; set;
     } = string.Empty;
 
+    public async Task GetCollection()
+    {
+        var list = await PersistenceService.GetCollectionAsync();
+        IpCollection = new ObservableCollection<IpModel>(list);
+    }
+
     [RelayCommand]
     public async Task ResolvePublicIpAsync()
     {
         try
         {
-            Headline = IsResolvingText;
-            Subheadline = string.Empty;
+            Headline = IsResolvingHeadlineText;
+            Subheadline = IsResolvingSubheadlineText;
             ErrorEnabled = false;
             ProgressBarEnabled = true;
-            CopyBtnEnabled = false;
-            RefreshBtnEnabled = false;
+            SecondaryBtnEnabled = false;
+            PrimaryBtnEnabled = false;
 
             // Add some delay to see the progress bar
             await Task.Delay(1000);
 
             // Resolve Public IpAddress
             var response = await revealClient.GetAsync();
-            IpAddress = response?.Ip ?? "Error";
+
+            // Update IpAddress for clipboard copy
+            IpAddress = response.Ip;
+
+            // Save to recent activity
+            IpCollection.Add(response);
+            await PersistenceService.SetCollectionAsync([.. IpCollection]);
 
             Headline = IpAddress;
-            Subheadline = $"{response?.Isp_organization} | {response?.City} @ {response?.Country}";
-            CopyBtnEnabled = true;
+            Subheadline = response.InternetServiceProvider;
+            SecondaryBtnEnabled = true;
         }
         catch (HttpRequestException)
         {
@@ -101,7 +122,7 @@ public partial class AppPageViewModel : ObservableObject
         }
 
         ProgressBarEnabled = false;
-        RefreshBtnEnabled = true;
+        PrimaryBtnEnabled = true;
     }
 
     [RelayCommand]
@@ -110,8 +131,8 @@ public partial class AppPageViewModel : ObservableObject
         try
         {
             ProgressBarEnabled = true;
-            CopyBtnEnabled = false;
-            RefreshBtnEnabled = false;
+            SecondaryBtnEnabled = false;
+            PrimaryBtnEnabled = false;
 
             // Add some delay to see the progress bar
             await Task.Delay(500);
@@ -129,18 +150,31 @@ public partial class AppPageViewModel : ObservableObject
             ErrorMessage = $"{ex.Message}";
             ErrorEnabled = true;
             ProgressBarEnabled = false;
-            CopyBtnEnabled = true;
-            RefreshBtnEnabled = true;
+            SecondaryBtnEnabled = true;
+            PrimaryBtnEnabled = true;
         }
 
         ProgressBarEnabled = false;
-        CopyBtnEnabled = true;
-        RefreshBtnEnabled = true;
+        SecondaryBtnEnabled = true;
+        PrimaryBtnEnabled = true;
     }
 
     [RelayCommand]
-    public static void AppExit()
+    public async Task DeleteRecentActivity()
     {
-        Application.Current.Exit();
+        try
+        {
+            // Add some delay to see the progress bar
+            await Task.Delay(500);
+
+            // Clear recent activity
+            IpCollection.Clear();
+            await PersistenceService.SetCollectionAsync([.. IpCollection]);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"{ex.Message}";
+            ErrorEnabled = true;
+        }
     }
 }
