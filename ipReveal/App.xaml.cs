@@ -26,9 +26,9 @@ public partial class App : Application
         var services = new ServiceCollection();
 
         services.AddTransient<AppPageViewModel>();
-        services.AddHttpClient<RevealServiceClient>(client =>
+        services.AddHttpClient<ResolveServiceClient>(client =>
         {
-            client.BaseAddress = new Uri("https://ipreveal.cc/");
+            client.BaseAddress = new Uri("http://ip-api.com");
         });
 
         Ioc.Default.ConfigureServices(services.BuildServiceProvider());
