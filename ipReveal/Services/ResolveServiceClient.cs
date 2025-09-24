@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace ip_a.Services;
 
-public class RevealServiceClient(HttpClient httpClient)
+public class ResolveServiceClient(HttpClient httpClient)
 {
     public async Task<IpModel> GetAsync()
     {
-        var response = await httpClient.GetFromJsonAsync("all.json", IpModelContext.Default.IpModel);
+        var response = await httpClient.GetFromJsonAsync("json", IpModelContext.Default.IpModel);
         return response ?? throw new Exception("We’re having trouble connecting to the server.");
     }
 }

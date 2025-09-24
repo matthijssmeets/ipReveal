@@ -15,11 +15,11 @@ public partial class AppPageViewModel : ObservableObject
     private const string IsResolvingHeadlineText = "Resolving Public IP";
     private const string IsResolvingSubheadlineText = "• • • • •";
 
-    private readonly RevealServiceClient revealClient;
+    private readonly ResolveServiceClient _resolveServiceClient;
 
-    public AppPageViewModel(RevealServiceClient revealServiceClient)
+    public AppPageViewModel(ResolveServiceClient resolveServiceClient)
     {
-        revealClient = revealServiceClient;
+        _resolveServiceClient = resolveServiceClient;
     }
 
     [ObservableProperty]
@@ -97,17 +97,17 @@ public partial class AppPageViewModel : ObservableObject
             await Task.Delay(1000);
 
             // Resolve Public IpAddress
-            var response = await revealClient.GetAsync();
+            var response = await _resolveServiceClient.GetAsync();
 
             // Update IpAddress for clipboard copy
-            IpAddress = response.Ip;
+            IpAddress = response.query;
 
             // Save to recent activity
             IpCollection.Add(response);
             await PersistenceService.SetCollectionAsync([.. IpCollection]);
 
             Headline = IpAddress;
-            Subheadline = response.InternetServiceProvider;
+            Subheadline = response.Isp;
             SecondaryBtnEnabled = true;
         }
         catch (HttpRequestException)
