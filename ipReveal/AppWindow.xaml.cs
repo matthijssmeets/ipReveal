@@ -5,5 +5,6 @@ public sealed partial class AppWindow : WinUIEx.WindowEx
     public AppWindow()
     {
         InitializeComponent();
+        ExtendsContentIntoTitleBar = true;
     }
 }

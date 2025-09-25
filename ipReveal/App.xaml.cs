@@ -9,8 +9,6 @@ namespace ip_a;
 
 public partial class App : Application
 {
-    private Window? window;
-
     public App()
     {
         InitializeComponent();
@@ -25,18 +23,15 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
+        services.AddTransient<AppWindow>();
         services.AddTransient<AppPageViewModel>();
         services.AddHttpClient<ResolveServiceClient>(client =>
         {
             client.BaseAddress = new Uri("http://ip-api.com");
         });
-
         Ioc.Default.ConfigureServices(services.BuildServiceProvider());
 
-        window = new AppWindow
-        {
-            ExtendsContentIntoTitleBar = true
-        };
+        var window = Ioc.Default.GetRequiredService<AppWindow>();
         window.Activate();
         MainRoot = window.Content as FrameworkElement
             ?? throw new InvalidOperationException("Window.Content is not a FrameworkElement.");
