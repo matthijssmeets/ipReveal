@@ -20,21 +20,26 @@
             Spacing="10">
 
             <CommandBar
-            Background="Transparent"
-            HorizontalAlignment="Center">
+                Background="Transparent"
+                HorizontalAlignment="Center">
                 <AppBarButton
                     Icon="Copy"
-                    Label="Copy"
+                    Label="Copy IP"
                     IsEnabled="{x:Bind ViewModel.SecondaryBtnEnabled, Mode=OneWay}"
                     Command="{x:Bind ViewModel.CopyValueCommand}" />
                 <AppBarButton
+                    Icon="Save"
+                    Label="Save IP"
+                    IsEnabled="{x:Bind ViewModel.SecondaryBtnEnabled, Mode=OneWay}"
+                    Command="{x:Bind ViewModel.SaveToCollectionCommand}" />
+                <AppBarButton
                     Icon="Refresh"
-                    Label="Refesh"
+                    Label="Resolve IP"
                     IsEnabled="{x:Bind ViewModel.PrimaryBtnEnabled, Mode=OneWay}"
                     Command="{x:Bind ViewModel.ResolvePublicIpCommand}" />
                 <AppBarButton
                     Icon="Delete"
-                    Label="Delete Activity"
+                    Label="Delete IP Collection"
                     IsEnabled="{x:Bind ViewModel.SecondaryBtnEnabled, Mode=OneWay}"
                     Command="{x:Bind ViewModel.DeleteRecentActivityCommand}" />
             </CommandBar>
@@ -58,7 +63,7 @@
 
             <TextBlock
                 FontSize="20"
-                Text="Recent Activity" />
+                Text="IP Collection" />
         </StackPanel>
 
         <tv:TableView
@@ -73,9 +78,9 @@
             <tv:TableView.RowContextFlyout>
                 <MenuFlyout>
                     <MenuFlyoutItem x:Name="deleteRow"
-                                            Text="Delete"
-                                            Icon="Delete"
-                                            Click="OnRowMenuItemClicked" />
+                        Text="Delete"
+                        Icon="Delete"
+                        Click="OnRowMenuItemClicked" />
                 </MenuFlyout>
             </tv:TableView.RowContextFlyout>
         </tv:TableView>
