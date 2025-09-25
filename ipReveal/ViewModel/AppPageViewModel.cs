@@ -72,7 +72,7 @@ public partial class AppPageViewModel : ObservableObject
         get; set;
     } = [];
 
-    private IpModel ResolvedIpAddr
+    private IpModel? ResolvedIpAddr
     {
         get; set;
     }
@@ -91,18 +91,15 @@ public partial class AppPageViewModel : ObservableObject
             Headline = IsResolvingHeadlineText;
             Subheadline = IsResolvingSubheadlineText;
             ErrorEnabled = false;
-            ProgressBarEnabled = true;
-            SecondaryBtnEnabled = false;
-            PrimaryBtnEnabled = false;
 
             // Resolve Public IpAddress
-            var response = await _resolveServiceClient.GetAsync();
+            ResolvedIpAddr = await _resolveServiceClient.GetAsync();
 
-            // Save response
-            ResolvedIpAddr = response;
+            if (ResolvedIpAddr is null)
+                return;
 
             Headline = ResolvedIpAddr.query;
-            Subheadline = response.Isp;
+            Subheadline = ResolvedIpAddr.Isp;
         });
     }
 
@@ -111,9 +108,8 @@ public partial class AppPageViewModel : ObservableObject
     {
         await ExecuteWithHandlingAsync<Task>(async () =>
         {
-            ProgressBarEnabled = true;
-            SecondaryBtnEnabled = false;
-            PrimaryBtnEnabled = false;
+            if (ResolvedIpAddr is null)
+                return;
 
             // Save to recent activity
             IpCollection.Add(ResolvedIpAddr);
@@ -126,9 +122,11 @@ public partial class AppPageViewModel : ObservableObject
     {
         await ExecuteWithHandlingAsync<Task>(async () =>
         {
-            ProgressBarEnabled = true;
-            SecondaryBtnEnabled = false;
-            PrimaryBtnEnabled = false;
+            if (ResolvedIpAddr is null)
+                return;
+
+            // Add some delay to see the progress bar
+            await Task.Delay(50);
 
             // Copy to clipboard
             DataPackage dataPackage = new()
@@ -150,10 +148,15 @@ public partial class AppPageViewModel : ObservableObject
             {
                 XamlRoot = App.MainRoot!.XamlRoot,
                 Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-                Title = "Delete Recent Activity?",
+                Title = "Delete IP Collection?",
                 PrimaryButtonText = "Delete",
                 CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Primary
+                DefaultButton = ContentDialogButton.Primary,
+                Content = new TextBlock
+                {
+                    Text = "This action cannot be undone.",
+                    TextWrapping = TextWrapping.Wrap
+                }
             };
 
             // Show dialog and check if user confirmed
@@ -186,10 +189,13 @@ public partial class AppPageViewModel : ObservableObject
             PrimaryBtnEnabled = false;
 
             // Add some delay to see the progress bar
-            await Task.Delay(500);
+            await Task.Delay(250);
 
             // Execute the function
             await func();
+
+            // Add some delay to see the progress bar
+            await Task.Delay(250);
         }
         catch (HttpRequestException)
         {
