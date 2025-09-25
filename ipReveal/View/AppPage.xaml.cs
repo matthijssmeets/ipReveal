@@ -23,4 +23,5 @@ public sealed partial class AppPage : Page
         await ViewModel.GetCollection();
         await ViewModel.ResolvePublicIpAsync();
     }
+
 }

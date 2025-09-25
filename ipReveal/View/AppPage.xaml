@@ -63,12 +63,22 @@
 
         <tv:TableView
                 Grid.Row="1"
-                x:Name="IpCollectionView"
+                x:Name="tableView"
                 ItemsSource="{x:Bind ViewModel.IpCollection, Mode=TwoWay}"
                 SelectionMode="Extended"
                 CornerButtonMode="Options"
                 IsReadOnly="True"
-                ShowExportOptions="True" />
+                ShowExportOptions="True">
+
+            <tv:TableView.RowContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem x:Name="deleteRow"
+                                            Text="Delete"
+                                            Icon="Delete"
+                                            Click="OnRowMenuItemClicked" />
+                </MenuFlyout>
+            </tv:TableView.RowContextFlyout>
+        </tv:TableView>
 
         <ProgressBar
             Grid.Row="2"
