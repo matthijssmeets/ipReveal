@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using ip_a.Services;
+using ip_a.View;
 using ip_a.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -24,7 +25,11 @@ public partial class App : Application
         var services = new ServiceCollection();
 
         services.AddTransient<AppWindow>();
+        services.AddTransient<AppWindowViewModel>();
+        services.AddTransient<AppPage>();
         services.AddTransient<AppPageViewModel>();
+        services.AddTransient<SpeedPage>();
+        services.AddTransient<SpeedPageViewModel>();
         services.AddHttpClient<ResolveServiceClient>(client =>
         {
             client.BaseAddress = new Uri("http://ip-api.com");
@@ -33,7 +38,6 @@ public partial class App : Application
 
         var window = Ioc.Default.GetRequiredService<AppWindow>();
         window.Activate();
-        MainRoot = window.Content as FrameworkElement
-            ?? throw new InvalidOperationException("Window.Content is not a FrameworkElement.");
+        MainRoot = window.Content as FrameworkElement;
     }
 }

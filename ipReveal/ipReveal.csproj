@@ -15,6 +15,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="View\AppPage.xaml" />
+    <None Remove="View\SpeedPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,6 +55,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="AppPackages\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="View\SpeedPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--
