@@ -4,6 +4,7 @@ using ip_a.View;
 using ip_a.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using SpeedTestSharp.Client;
 using System;
 
 namespace ip_a;
@@ -34,6 +35,7 @@ public partial class App : Application
         {
             client.BaseAddress = new Uri("http://ip-api.com");
         });
+        services.AddTransient<SpeedTestClient>();
         Ioc.Default.ConfigureServices(services.BuildServiceProvider());
 
         var window = Ioc.Default.GetRequiredService<AppWindow>();
