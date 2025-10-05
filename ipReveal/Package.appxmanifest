@@ -10,7 +10,7 @@
   <Identity
     Name="MatthijsSmeets.63108A38D5945"
     Publisher="CN=8BEAA631-DE9C-45C5-B484-12FEA1C25065"
-    Version="1.0.8.0" />
+    Version="1.0.9.0" />
 
   <mp:PhoneIdentity PhoneProductId="4e555c6c-17ae-4f5b-a87a-fe4ef463a061" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
