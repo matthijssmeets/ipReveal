@@ -23,4 +23,14 @@ public sealed partial class AppPage : Page
         await ViewModel.GetCollection();
         await ViewModel.ResolvePublicIpAsync();
     }
+
+    private async void OnRowMenuItemClicked(object sender, RoutedEventArgs e)
+    {
+        var menuItem = sender as MenuFlyoutItem;
+        if (menuItem == deleteRow)
+        {
+            tableView.CollectionView.Remove(deleteRow.DataContext);
+        }
+        await ViewModel.SaveCollectionAsync();
+    }
 }

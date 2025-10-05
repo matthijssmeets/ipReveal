@@ -2,6 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using ip_a.Models;
 using ip_a.Services;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.ObjectModel;
 using System.Net.Http;
@@ -15,11 +17,11 @@ public partial class AppPageViewModel : ObservableObject
     private const string IsResolvingHeadlineText = "Resolving Public IP";
     private const string IsResolvingSubheadlineText = "• • • • •";
 
-    private readonly RevealServiceClient revealClient;
+    private readonly ResolveServiceClient _resolveServiceClient;
 
-    public AppPageViewModel(RevealServiceClient revealServiceClient)
+    public AppPageViewModel(ResolveServiceClient resolveServiceClient)
     {
-        revealClient = revealServiceClient;
+        _resolveServiceClient = resolveServiceClient;
     }
 
     [ObservableProperty]
@@ -70,10 +72,10 @@ public partial class AppPageViewModel : ObservableObject
         get; set;
     } = [];
 
-    private string IpAddress
+    private IpModel? ResolvedIpAddr
     {
         get; set;
-    } = string.Empty;
+    }
 
     public async Task GetCollection()
     {
@@ -84,49 +86,101 @@ public partial class AppPageViewModel : ObservableObject
     [RelayCommand]
     public async Task ResolvePublicIpAsync()
     {
-        try
+        await ExecuteWithHandlingAsync<Task>(async () =>
         {
             Headline = IsResolvingHeadlineText;
             Subheadline = IsResolvingSubheadlineText;
             ErrorEnabled = false;
-            ProgressBarEnabled = true;
-            SecondaryBtnEnabled = false;
-            PrimaryBtnEnabled = false;
-
-            // Add some delay to see the progress bar
-            await Task.Delay(1000);
 
             // Resolve Public IpAddress
-            var response = await revealClient.GetAsync();
+            ResolvedIpAddr = await _resolveServiceClient.GetAsync();
 
-            // Update IpAddress for clipboard copy
-            IpAddress = response.Ip;
+            if (ResolvedIpAddr is null)
+                return;
+
+            Headline = ResolvedIpAddr.query;
+            Subheadline = ResolvedIpAddr.Isp;
+        });
+    }
+
+    [RelayCommand]
+    public async Task SaveToCollectionAsync()
+    {
+        await ExecuteWithHandlingAsync<Task>(async () =>
+        {
+            if (ResolvedIpAddr is null)
+                return;
 
             // Save to recent activity
-            IpCollection.Add(response);
+            IpCollection.Add(ResolvedIpAddr);
             await PersistenceService.SetCollectionAsync([.. IpCollection]);
-
-            Headline = IpAddress;
-            Subheadline = response.InternetServiceProvider;
-            SecondaryBtnEnabled = true;
-        }
-        catch (HttpRequestException)
-        {
-            ErrorMessage = "Please check your connection...";
-            ErrorEnabled = true;
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"{ex.Message}";
-            ErrorEnabled = true;
-        }
-
-        ProgressBarEnabled = false;
-        PrimaryBtnEnabled = true;
+        });
     }
 
     [RelayCommand]
     public async Task CopyValueAsync()
+    {
+        await ExecuteWithHandlingAsync<Task>(async () =>
+        {
+            if (ResolvedIpAddr is null)
+                return;
+
+            // Add some delay to see the progress bar
+            await Task.Delay(50);
+
+            // Copy to clipboard
+            DataPackage dataPackage = new()
+            {
+                RequestedOperation = DataPackageOperation.Copy
+            };
+            dataPackage.SetText(ResolvedIpAddr.query);
+            Clipboard.SetContent(dataPackage);
+        });
+    }
+
+    [RelayCommand]
+    public async Task DeleteRecentActivity()
+    {
+        await ExecuteWithHandlingAsync<Task>(async () =>
+        {
+            // Show confirmation dialog
+            var dialog = new ContentDialog
+            {
+                XamlRoot = App.MainRoot!.XamlRoot,
+                Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                Title = "Delete IP Collection?",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                Content = new TextBlock
+                {
+                    Text = "This action cannot be undone.",
+                    TextWrapping = TextWrapping.Wrap
+                }
+            };
+
+            // Show dialog and check if user confirmed
+            var result = await dialog.ShowAsync();
+            if (result != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            // Clear recent activity
+            IpCollection.Clear();
+            await PersistenceService.SetCollectionAsync([.. IpCollection]);
+        });
+    }
+
+    public async Task SaveCollectionAsync()
+    {
+        await ExecuteWithHandlingAsync<Task>(async () =>
+        {
+            await PersistenceService.SetCollectionAsync([.. IpCollection]);
+        });
+    }
+
+    public async Task ExecuteWithHandlingAsync<T>(Func<Task> func)
     {
         try
         {
@@ -135,15 +189,18 @@ public partial class AppPageViewModel : ObservableObject
             PrimaryBtnEnabled = false;
 
             // Add some delay to see the progress bar
-            await Task.Delay(500);
+            await Task.Delay(250);
 
-            // Copy to clipboard
-            DataPackage dataPackage = new()
-            {
-                RequestedOperation = DataPackageOperation.Copy
-            };
-            dataPackage.SetText(IpAddress);
-            Clipboard.SetContent(dataPackage);
+            // Execute the function
+            await func();
+
+            // Add some delay to see the progress bar
+            await Task.Delay(250);
+        }
+        catch (HttpRequestException)
+        {
+            ErrorMessage = "Please check your connection...";
+            ErrorEnabled = true;
         }
         catch (Exception ex)
         {
@@ -157,24 +214,5 @@ public partial class AppPageViewModel : ObservableObject
         ProgressBarEnabled = false;
         SecondaryBtnEnabled = true;
         PrimaryBtnEnabled = true;
-    }
-
-    [RelayCommand]
-    public async Task DeleteRecentActivity()
-    {
-        try
-        {
-            // Add some delay to see the progress bar
-            await Task.Delay(500);
-
-            // Clear recent activity
-            IpCollection.Clear();
-            await PersistenceService.SetCollectionAsync([.. IpCollection]);
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"{ex.Message}";
-            ErrorEnabled = true;
-        }
     }
 }
